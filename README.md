@@ -26,4 +26,4 @@
    ```bash
    npm install
    папка server  : npx json-server --watch db.json --port 3000
-3. vue 2 : npm run dev
+3. ``` npm run dev
