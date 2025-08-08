@@ -27,4 +27,5 @@
    npm install
    папка server  : npx json-server --watch db.json --port 3000
 3. Запуск проекта:
-    ``` npm run dev
+    ```bash
+     npm run dev
