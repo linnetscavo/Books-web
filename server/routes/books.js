@@ -173,9 +173,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const isAdmin = user && user.role === 'admin';
     
     // Check if the user is the owner of the book or an admin
-    if (book.userId !== req.user.id && !isAdmin) {
-      return res.status(403).json({ error: 'У вас нет прав на редактирование этой книги' });
-    }
+    // if (book.userId !== req.user.id && !isAdmin) {
+    //   return res.status(403).json({ error: 'У вас нет прав на редактирование этой книги' });
+    // }
 
     // Update book data
     const updatedBook = {

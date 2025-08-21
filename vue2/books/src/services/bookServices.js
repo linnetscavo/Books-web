@@ -1,30 +1,65 @@
-import axios from 'axios'
-import { URL_BOOKS } from '@/constants'
+import axios from 'axios';
+import { URL_BOOKS } from '@/constants';
+import { useAuthStore } from '@/stores/authStore'; // ✅ Подключаем хранилище
+
+// Вспомогательная функция для получения заголовков с токеном
+const getAuthHeaders = () => {
+  const authStore = useAuthStore();
+  const token = authStore.token;
+  return token
+    ? { headers: { 'Authorization': `Bearer ${token}` } }
+    : {};
+};
 
 export const getBooks = async () => {
-  const response = await axios.get(URL_BOOKS)
-  return response?.data || []
-}
+  try {
+    const response = await axios.get(URL_BOOKS, getAuthHeaders());
+    return response?.data || [];
+  } catch (error) {
+    console.error('Ошибка при загрузке книг:', error);
+    return [];
+  }
+};
 
 export const getBookById = async (id) => {
-  const response = await axios.get(`${URL_BOOKS}/${id}`)
-  return response?.data
-}
+  try {
+    const response = await axios.get(`${URL_BOOKS}/${id}`, getAuthHeaders());
+    return response?.data;
+  } catch (error) {
+    console.error('Ошибка при загрузке книги:', error);
+    throw error;
+  }
+};
 
 export const createBook = async (bookData) => {
-  const response = await axios.post(URL_BOOKS, bookData)
-  return response?.data
-}
+  try {
+    const response = await axios.post(URL_BOOKS, bookData, getAuthHeaders());
+    return response?.data;
+  } catch (error) {
+    console.error('Ошибка при создании книги:', error);
+    throw error;
+  }
+};
 
 export const updateBook = async (id, bookData) => {
-  const response = await axios.put(`${URL_BOOKS}/${id}`, bookData)
-  return response?.data
-}
+  try {
+    const response = await axios.put(`${URL_BOOKS}/${id}`, bookData, getAuthHeaders());
+    return response?.data;
+  } catch (error) {
+    console.error('Ошибка при обновлении книги:', error);
+    throw error;
+  }
+};
 
 export const deleteBook = async (id) => {
-  const response = await axios.delete(`${URL_BOOKS}/${id}`)
-  return response?.data
-}
+  try {
+    const response = await axios.delete(`${URL_BOOKS}/${id}`, getAuthHeaders());
+    return response?.data;
+  } catch (error) {
+    console.error('Ошибка при удалении книги:', error);
+    throw error;
+  }
+};
 
 export const getEmptyBook = () => ({
   id: null,
@@ -32,5 +67,7 @@ export const getEmptyBook = () => ({
   author: '',
   year: '',
   genre: '',
-  cover: '',
-})
+  description: '',
+  coverUrl: '',
+   
+});

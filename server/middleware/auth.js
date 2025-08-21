@@ -23,7 +23,7 @@ export const authenticateToken = (req, res, next) => {
 // Generate JWT token
 export const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, username: user.username },
+    { id: user.id, username: user.email },
     JWT_SECRET,
     { expiresIn: '24h' }
   );

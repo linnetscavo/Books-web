@@ -1,34 +1,53 @@
 <script setup>
 import { onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ROUTES_PATHS } from '@/constants'
-import { Reading, Document } from '@element-plus/icons-vue'
+import { Reading, UserFilled } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/authStore';
 
 const route = useRoute()
+const router = useRouter();
+const authStore = useAuthStore();
 
 const isPathActive = (path) => route.path === path
 
-onMounted(() => isPathActive(route.path))
+const handleLogout = () => {
+  authStore.logout();
+  router.push('/login');
+};
+
+onMounted(() => authStore.checkAuthStatus());
 </script>
 
 <template>
   <div class="menu">
     <div class="logo">
-      <img src="https://cdn-icons-png.flaticon.com/512/29/29302.png" alt="Библиотека" width="35" height="35" />
+      <router-link to="/books">
+      <img src="https://cdn-icons-png.flaticon.com/512/29/29302.png" alt="Библиотека" width="35" height="35"  style="cursor: pointer;"/>
+    </router-link>
     </div>
 
     <el-menu :router="true" class="nav el-menu-vertical-demo">
+
       <el-menu-item
         :index="ROUTES_PATHS.BOOKS"
         :class="['item', isPathActive(ROUTES_PATHS.BOOK) && 'active']"
-      >
-        <el-icon><Reading /></el-icon>
+      ><el-icon><Reading /></el-icon>
     </el-menu-item>
-      <el-menu-item
-        :index="ROUTES_PATHS.ACCOUNT"
-        :class="['item', isPathActive(ROUTES_PATHS.BOOKS) && 'active']"
-      >
-        <el-icon><Document /></el-icon>
+
+      <el-menu-item 
+        v-if="!authStore.isLoggedIn" 
+        :index="ROUTES_PATHS.LOGIN" 
+        :class="['item', isPathActive(ROUTES_PATHS.LOGIN) && 'active']">
+        <el-icon><UserFilled /></el-icon>
+      </el-menu-item>
+      
+      <el-menu-item 
+        v-if="authStore.isLoggedIn" 
+        @click.prevent="handleLogout"
+        :index="ROUTES_PATHS.LOGIN"
+        :class="['item', isPathActive(ROUTES_PATHS.LOGIN) && 'active']">
+        <el-icon><UserFilled /></el-icon>
       </el-menu-item>
     </el-menu>
   </div>

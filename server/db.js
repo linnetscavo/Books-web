@@ -13,9 +13,14 @@ const db = new Low(adapter);
 
 // Read data from JSON file, fall back to empty db
 await db.read();
+console.log('DB init:', db.data);
 
+db.data ||= {};
+db.data.users ||= [];
+db.data.books ||= [];
+db.data.reviews ||= [];
 // Ensure required collections exist
-db.data ||= { users: [], books: [], reviews: [] };
+//db.data ||= { users: [], books: [], reviews: [] };
 
 // Function to write to the database
 const saveDb = async () => {

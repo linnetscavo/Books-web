@@ -6,6 +6,9 @@ import { BookService } from '@/services';
 import AppButton from '@/components/AppButton.vue';
 import { ElLoading } from 'element-plus';
 import { notify } from '@/utils';
+import { ElMessageBox, ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 const route = useRoute();
 const bookId = route?.params.id;
@@ -15,9 +18,22 @@ const isCreatingMode = ref(true);
 const book = ref(BookService.getEmptyBook());
 const bookUpdated = ref(BookService.getEmptyBook());
 
+const rules = {
+  title: [{ required: true, message: 'Введите название', trigger: 'blur' }],
+  author: [{ required: true, message: 'Введите автора', trigger: 'blur' }],
+  year: [
+    { required: true, message: 'Введите год', trigger: 'blur' },
+    { type: 'number', message: 'Год должен быть числом', trigger: 'blur' }
+  ],
+  genre: [{ required: true, message: 'Введите жанр', trigger: 'blur' }],
+  description: [{ required: true, message: 'Введите описание', trigger: 'blur' }]
+};
 
 const handleUploadSuccess = (response, file) => {
-  bookUpdated.value.coverUrl = response.path || `/covers/${file.name}`;
+  console.log('Загрузка успешна:', response); // Для отладки
+  if (response.coverUrl) {
+    bookUpdated.value.coverUrl = response.coverUrl;
+  }
 };
 
 const fetchBook = async () => {
@@ -75,6 +91,32 @@ const createOrUpdateBook = () => {
   isCreatingMode.value ? createBook() : updateBook();
 };
 
+const confirmDelete = async () => {
+  ElMessageBox.confirm(
+    `Вы уверены, что хотите удалить книгу "${bookUpdated.value.title}"?`,
+    'Подтверждение удаления',
+    {
+      confirmButtonText: 'Удалить',
+      cancelButtonText: 'Отмена',
+      type: 'warning',
+    }
+  )
+    .then(async () => {
+      try {
+        await BookService.deleteBook(bookId);
+        ElMessage.success(`Книга "${bookUpdated.value.title}" удалена`);
+        // Перенаправляем на список книг
+        router.push('/books');
+      } catch (error) {
+        ElMessage.error('Ошибка при удалении книги');
+        console.error(error);
+      }
+    })
+    .catch(() => {
+      ElMessage.info('Удаление отменено');
+    });
+};
+
 onMounted(async () => {
   if (bookId && bookId !== 'new') {
     await fetchBook();
@@ -94,6 +136,13 @@ onMounted(async () => {
 
     <template #controls>
       <AppButton text="Сохранить" @click="createOrUpdateBook" />
+      <AppButton
+          v-if="!isCreatingMode"
+          type="danger"
+          text="Удалить"
+          @click="confirmDelete"
+          style="margin-left: auto"
+        />
     </template>
 
     <template #inner>
@@ -130,16 +179,28 @@ onMounted(async () => {
             alt="Обложка"
             style="max-width: 120px; margin-bottom: 8px;"
           />
+          <div class="row">
+          <div class="col">
+            <div class="label">Описание</div>
+            <el-input
+              v-model="bookUpdated.description"
+              type="textarea"
+              :rows="4"
+              placeholder="Введите описание книги"
+            />
+          </div>
+        </div>
 
           <el-upload
             class="upload-demo"
             drag
-            action="http://localhost:3000/upload"  
-            name="file"
+            action="http://localhost:3000/upload/cover"  
+            name="cover"                                   
             :show-file-list="false"
             :on-success="handleUploadSuccess"
+            :auto-upload="true"                            
           >
-              <i class="el-icon-upload"> </i>
+            <i class="el-icon-upload"></i>
             <div class="el-upload__text">Перетащите или <em>нажмите для выбора</em></div>
             <div class="el-upload__tip" slot="tip">Изображение будет загружено на сервер</div>
           </el-upload>

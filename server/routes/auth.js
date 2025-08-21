@@ -8,11 +8,11 @@ const router = express.Router();
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, email } = req.body;
+    const { email, password } = req.body;
 
-    // Check if username already exists
-    if (db.data.users.some(user => user.username === username)) {
-      return res.status(400).json({ error: 'Пользователь с таким именем уже существует' });
+    // Check if email already exists
+    if (db.data.users.some(user => user.email === email)) {
+      return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
     }
 
     // Hash password
@@ -22,9 +22,8 @@ router.post('/register', async (req, res) => {
     // Create new user
     const newUser = {
       id: db.data.users.length ? Math.max(...db.data.users.map(u => u.id)) + 1 : 1,
-      username,
-      password: hashedPassword,
-      email
+      email,
+      password: hashedPassword
     };
 
     // Add user to database
@@ -32,22 +31,18 @@ router.post('/register', async (req, res) => {
     await saveDb();
 
     // Create user object without password for response
-    const userForResponse = { ...newUser };
-    delete userForResponse.password;
+    const userForResponse = { 
+      id: newUser.id,
+      email: newUser.email
+    };
 
     // Generate token
     const token = generateToken(userForResponse);
 
-    // Debug info for educational purposes
-    const debugInfo = {
-      message: 'Это информация только для учебных целей!',
-      passwordHash: hashedPassword
-    };
-
     res.status(201).json({
       user: userForResponse,
       token,
-      debug: debugInfo
+      message: 'Пользователь успешно зарегистрирован'
     });
   } catch (error) {
     res.status(500).json({ error: 'Ошибка при регистрации пользователя', details: error.message });
@@ -57,41 +52,37 @@ router.post('/register', async (req, res) => {
 // Login user
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    // Find user by username
-    const user = db.data.users.find(u => u.username === username);
+    // Find user by email
+    const user = db.data.users.find(u => u.email === email);
     if (!user) {
-      return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+      return res.status(401).json({ error: 'Неверный email или пароль' });
     }
 
     // Check password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+      return res.status(401).json({ error: 'Неверный email или пароль' });
     }
 
     // Create user object without password for response
-    const userForResponse = { ...user };
-    delete userForResponse.password;
+    const userForResponse = { 
+      id: user.id,
+      email: user.email 
+    };
 
     // Generate token
     const token = generateToken(userForResponse);
 
-    // Debug info for educational purposes
-    const debugInfo = {
-      message: 'Это информация только для учебных целей!',
-      passwordHash: user.password
-    };
-
     res.json({
       user: userForResponse,
       token,
-      debug: debugInfo
+      message: 'Вход выполнен успешно'
     });
   } catch (error) {
     res.status(500).json({ error: 'Ошибка при входе в систему', details: error.message });
   }
 });
 
-export default router; 
+export default router;

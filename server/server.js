@@ -6,10 +6,18 @@ import multer from 'multer';
 import fs from 'fs';
 import { db } from './db.js';
 
+
+
 // Import routes
 import authRoutes from './routes/auth.js';
 import booksRoutes from './routes/books.js';
 import reviewsRoutes from './routes/reviews.js';
+// Проверка загрузки маршрутов
+console.log('--- Проверка импортов ---');
+console.log('authRoutes:', authRoutes);
+console.log('booksRoutes:', booksRoutes);
+console.log('reviewsRoutes:', reviewsRoutes);
+console.log('-------------------------');
 
 // Get current directory
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,13 +35,14 @@ if (!fs.existsSync(coversDir)) {
 // Configure file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, coversDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = file.originalname.split('.').pop();
-    cb(null, `${uniqueSuffix}.${ext}`);
-  }
+      cb(null, coversDir);
+     },
+     filename: (req, file, cb) => {
+       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = file.originalname.split('.').pop();
+      cb(null, `${uniqueSuffix}.${ext}`);
+    }
+
 });
 
 const upload = multer({ storage });
@@ -51,7 +60,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
+     return res.sendStatus(200);
   }
   next();
 });
@@ -61,9 +70,8 @@ app.post('/upload/cover', upload.single('cover'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Файл не загружен' });
   }
-  
   const coverUrl = `/covers/${req.file.filename}`;
-  res.json({ coverUrl });
+    res.json({ coverUrl });
 });
 
 // API Routes
@@ -76,91 +84,91 @@ app.get('/books', (req, res) => {
   // Add owner information to each book
   const booksWithOwners = db.data.books.map(book => {
     const owner = db.data.users.find(user => user.id === book.userId);
-    
-    // Basic data without favorite info
+  // Basic data without favorite info
     let bookData = {
-      ...book,
+    ...book,
       ownerName: owner ? owner.username : 'Неизвестно',
       ownerFullName: owner ? `${owner.firstName} ${owner.lastName}` : 'Неизвестно',
       isFavorite: false
     };
-    
     return bookData;
-  });
-  
-  res.json(booksWithOwners);
 });
 
+  res.json(booksWithOwners);
+
+});
+
+
+
 app.get('/books/:id', (req, res) => {
-  const book = db.data.books.find(b => b.id === parseInt(req.params.id));
+const book = db.data.books.find(b => b.id === parseInt(req.params.id));
   if (!book) {
     return res.status(404).json({ error: 'Книга не найдена' });
   }
-  
-  // Add owner information
-  const owner = db.data.users.find(user => user.id === book.userId);
-  const bookWithOwner = {
-    ...book,
-    ownerName: owner ? owner.username : 'Неизвестно',
-    ownerFullName: owner ? `${owner.firstName} ${owner.lastName}` : 'Неизвестно',
-    isFavorite: false
+ // Add owner information
+const owner = db.data.users.find(user => user.id === book.userId);
+const bookWithOwner = {
+ ...book,
+  ownerName: owner ? owner.username : 'Неизвестно',
+  ownerFullName: owner ? `${owner.firstName} ${owner.lastName}` : 'Неизвестно',
+  isFavorite: false
   };
-  
   res.json(bookWithOwner);
 });
+
+
 
 app.get('/user-favorites', (req, res) => {
   // This should be an authenticated route but for simplicity
   // we'll just assume user ID 1 for direct access
   const userId = 1;
-  
   // Get user's favorite book IDs
   const favoriteIds = db.data.favorites
-    .filter(f => f.userId === userId)
-    .map(f => f.bookId);
-  
+  .filter(f => f.userId === userId)
+  .map(f => f.bookId);
   // Get the books that match these IDs
   const favoriteBooks = db.data.books
     .filter(book => favoriteIds.includes(book.id))
     .map(book => {
-      const owner = db.data.users.find(user => user.id === book.userId);
-      return {
+    const owner = db.data.users.find(user => user.id === book.userId);
+    return {
         ...book,
         ownerName: owner ? owner.username : 'Неизвестно',
         ownerFullName: owner ? `${owner.firstName} ${owner.lastName}` : 'Неизвестно',
         isFavorite: true
       };
     });
-  
   res.json(favoriteBooks);
 });
 
+
 app.get('/reviews', (req, res) => {
-  res.json(db.data.reviews);
+   res.json(db.data.reviews);
 });
 
 app.get('/reviews/:id', (req, res) => {
   const bookId = parseInt(req.params.id);
   const reviews = db.data.reviews.filter(r => r.bookId === bookId);
-  res.json(reviews);
+   res.json(reviews);
 });
+
 
 // Health check route
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+   res.json({ status: 'ok', message: 'Server is running' });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+   console.error(err.stack);
   res.status(500).json({
-    error: 'Что-то пошло не так!',
+     error: 'Что-то пошло не так!',
     details: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+   console.log(`Server running on port ${PORT}`);
   console.log(`API available at http://localhost:${PORT}`);
-}); 
+});

@@ -1,2 +1,2 @@
-запуск сервера : папка server  : npx json-server --watch db.json --port 3000
+запуск сервера : папка server  : npm start
 запуск сайта : папка vue 2 : npm run dev

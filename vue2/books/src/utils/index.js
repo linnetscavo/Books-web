@@ -5,5 +5,6 @@ export const notify = (title,message, type) => {
         title,
         message,
         type,
+        duration: 2000,
     })
 }
