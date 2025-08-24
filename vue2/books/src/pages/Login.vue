@@ -8,14 +8,13 @@ import { ElMessage } from 'element-plus';
 
 const authStore = useAuthStore();
 const router = useRouter();
-const formRef = ref(); // Добавили ref
+const formRef = ref(); 
 
 const form = ref({
   email: '',
   password: '',
 });
 
-// Правила валидации
 const rules = {
   email: [
     { required: true, message: 'Введите email', trigger: 'blur' },

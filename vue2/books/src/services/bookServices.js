@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { URL_BOOKS } from '@/constants';
-import { useAuthStore } from '@/stores/authStore'; // ✅ Подключаем хранилище
+import { useAuthStore } from '@/stores/authStore'; 
 
-// Вспомогательная функция для получения заголовков с токеном
 const getAuthHeaders = () => {
   const authStore = useAuthStore();
   const token = authStore.token;

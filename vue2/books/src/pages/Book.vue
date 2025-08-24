@@ -30,7 +30,7 @@ const rules = {
 };
 
 const handleUploadSuccess = (response, file) => {
-  console.log('Загрузка успешна:', response); // Для отладки
+  console.log('Загрузка успешна:', response); 
   if (response.coverUrl) {
     bookUpdated.value.coverUrl = response.coverUrl;
   }
@@ -105,7 +105,6 @@ const confirmDelete = async () => {
       try {
         await BookService.deleteBook(bookId);
         ElMessage.success(`Книга "${bookUpdated.value.title}" удалена`);
-        // Перенаправляем на список книг
         router.push('/books');
       } catch (error) {
         ElMessage.error('Ошибка при удалении книги');
